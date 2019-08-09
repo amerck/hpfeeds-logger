@@ -17,7 +17,7 @@ RUN apt-get update \
 
 ADD . /opt/
 RUN virtualenv /opt/hpfeeds-logger/hpfeeds-logger-test
-RUN /opt/hpfeeds-logger/hpfeeds-logger-env/bin/activate
+RUN source /opt/hpfeeds-logger/hpfeeds-logger-env/bin/activate
 RUN pip install -r /opt/hpfeeds-logger/requirements.txt
 RUN git clone https://github.com/CommunityHoneyNetwork/hpfeeds.git /srv
 RUN ln -s /srv//hpfeeds/lib/hpfeeds.py /opt/hpfeeds-logger/hpfeeds.py
