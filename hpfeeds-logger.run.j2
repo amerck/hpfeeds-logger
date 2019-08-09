@@ -4,10 +4,10 @@ trap "exit 130" SIGINT
 trap "exit 137" SIGKILL
 trap "exit 143" SIGTERM
 
-source {{ sysconfig_dir }}/hpfeeds-logger
-source {{ hpfeeds_logger_dir }}/hpfeeds-logger/hpfeeds-logger-env/bin/activate
+source /etc/default/hpfeeds-logger
+source /opt/hpfeeds-logger/hpfeeds-logger-env/bin/activate
 
-cd {{ hpfeeds_logger_dir }}
+cd /opt
 if [[ ! -f ./hpfeeds-logger.cfg ]]
 then
 
@@ -32,36 +32,36 @@ then
     ROTATION_TIME_UNIT=${ROTATION_TIME_UNIT:-'h'}
 
     # Change into the HPFeeds dir, it's needed for hpfeeds scripts
-    pushd {{ hpfeeds_dir }}/hpfeeds/broker/
+    pushd /srv/hpfeeds/broker/
 
     # Generate config file for hpfeeds broker and try to register
     # Exit if failed
-    python {{ hpfeeds_dir }}/hpfeeds/broker/generateconfig.py unattended --mongo_host ${MONGODB_HOST} --mongo_port ${MONGODB_PORT} || exit 1
-    python {{ hpfeeds_dir }}/hpfeeds/broker/add_user.py "$IDENT" "$SECRET" "" "$CHANNELS" || exit 1
+    python /srv/hpfeeds/broker/generateconfig.py unattended --mongo_host ${MONGODB_HOST} --mongo_port ${MONGODB_PORT} || exit 1
+    python /srv/hpfeeds/broker/add_user.py "$IDENT" "$SECRET" "" "$CHANNELS" || exit 1
 
-    # Change back to {{ hpfeeds_logger_dir }} directory
+    # Change back to /opt directory
     popd
 
     # copy the example logger.json.example file and edit in our variables
-    cp {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json.example {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s/\"host\": \"localhost\"/\"host\": \"${HPFEEDS_HOST}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s/\"port\": 10000/\"port\": ${HPFEEDS_PORT}/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s/\"ident\": \"hpfeeds-logger\"/\"ident\": \"${IDENT}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"secret\": \"\"|\"secret\": \"${SECRET//\|/\\\|}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s/\"formatter_name\": \"splunk\"/\"formatter_name\": \"${FORMATTER_NAME}\"/g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    cp /opt/hpfeeds-logger/logger.json.example /opt/hpfeeds-logger/logger.json
+    sed -i "s/\"host\": \"localhost\"/\"host\": \"${HPFEEDS_HOST}\"/g" /opt/hpfeeds-logger/logger.json
+    sed -i "s/\"port\": 10000/\"port\": ${HPFEEDS_PORT}/g" /opt/hpfeeds-logger/logger.json
+    sed -i "s/\"ident\": \"hpfeeds-logger\"/\"ident\": \"${IDENT}\"/g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"secret\": \"\"|\"secret\": \"${SECRET//\|/\\\|}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s/\"formatter_name\": \"splunk\"/\"formatter_name\": \"${FORMATTER_NAME}\"/g" /opt/hpfeeds-logger/logger.json
 
-    sed -i "s|\"filelog_enabled\": true|\"filelog_enabled\": ${FILELOG_ENABLED}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"log_file\": \"mhn-splunk-log.out\"|\"log_file\": \"${LOG_FILE}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"rotation_strategy\": \"size\"|\"rotation_strategy\": \"${ROTATION_STRATEGY}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"rotation_size_max\": \"100\"|\"rotation_size_max\": \"${ROTATION_SIZE_MAX}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"rotation_time_max\": \"24\"|\"rotation_time_max\": \"${ROTATION_TIME_MAX}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"rotation_time_unit\": \"h\"|\"rotation_time_unit\": \"${ROTATION_TIME_UNIT}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"rotation_backups\": \"3\"|\"rotation_backups\": \"${ROTATION_BACKUPS}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"filelog_enabled\": true|\"filelog_enabled\": ${FILELOG_ENABLED}|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"log_file\": \"mhn-splunk-log.out\"|\"log_file\": \"${LOG_FILE}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"rotation_strategy\": \"size\"|\"rotation_strategy\": \"${ROTATION_STRATEGY}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"rotation_size_max\": \"100\"|\"rotation_size_max\": \"${ROTATION_SIZE_MAX}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"rotation_time_max\": \"24\"|\"rotation_time_max\": \"${ROTATION_TIME_MAX}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"rotation_time_unit\": \"h\"|\"rotation_time_unit\": \"${ROTATION_TIME_UNIT}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"rotation_backups\": \"3\"|\"rotation_backups\": \"${ROTATION_BACKUPS}\"|g" /opt/hpfeeds-logger/logger.json
 
-    sed -i "s|\"syslog_enabled\": false|\"syslog_enabled\": ${SYSLOG_ENABLED}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"syslog_host\": \"localhost\"|\"syslog_host\": \"${SYSLOG_HOST}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"syslog_port\": 514|\"syslog_port\": ${SYSLOG_PORT}|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
-    sed -i "s|\"syslog_facility\": \"user\"|\"syslog_facility\": \"${SYSLOG_FACILITY}\"|g" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_enabled\": false|\"syslog_enabled\": ${SYSLOG_ENABLED}|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_host\": \"localhost\"|\"syslog_host\": \"${SYSLOG_HOST}\"|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_port\": 514|\"syslog_port\": ${SYSLOG_PORT}|g" /opt/hpfeeds-logger/logger.json
+    sed -i "s|\"syslog_facility\": \"user\"|\"syslog_facility\": \"${SYSLOG_FACILITY}\"|g" /opt/hpfeeds-logger/logger.json
 
     # Please forgive me for this code
     OLD_IFS=${IFS}
@@ -69,13 +69,13 @@ then
     OUR_TEXT=`echo ${CHANNELS} | sed -e 's/^/\\\"/' -e 's/$/\\\"/' -e 's/,/\\\",\\\"/g' | tr ',' '\n' | sed -e 's/$/,/' -e '$s/,$//' -e 's/^/\\t/'`
 
     # Please also forgive me for using perl
-    perl -i -p -000 -e "s/CHANNEL_VAR/${OUR_TEXT}/" {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+    perl -i -p -000 -e "s/CHANNEL_VAR/${OUR_TEXT}/" /opt/hpfeeds-logger/logger.json
 
     IFS=${OLD_IFS}
 
 fi
 
-cd {{ hpfeeds_logger_dir}}/hpfeeds-logger/
+cd /opt/hpfeeds-logger/
 echo "Starting hpfeeds-logger..."
-export PYTHONPATH={{ hpfeeds_logger_dir }}/hpfeeds-logger
-exec python {{ hpfeeds_logger_dir }}/hpfeeds-logger/bin/hpfeeds-logger {{ hpfeeds_logger_dir }}/hpfeeds-logger/logger.json
+export PYTHONPATH=/opt/hpfeeds-logger
+exec python /opt/hpfeeds-logger/bin/hpfeeds-logger /opt/hpfeeds-logger/logger.json
